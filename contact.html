@@ -118,6 +118,23 @@
     line-height:1.5;
     color:var(--ink-faint);
   }
+  footer{
+    border-top:1px solid var(--line);
+    padding:46px clamp(20px,5vw,64px);
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  footer .wordmark{font-size:14px}
+  footer .copy{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+  }
   @media(max-width:820px){
     main{grid-template-columns:1fr;padding:120px clamp(20px,6vw,40px) 60px}
     .intro{max-width:none}
@@ -169,5 +186,9 @@
     <p class="note">This form sends your message directly to the AMBIONIC team.</p>
   </form>
 </main>
+<footer>
+  <span class="wordmark">AMBI<b>O</b>NIC</span>
+  <span class="copy">© 2026 AMBIONIC — ALL RIGHTS RESERVED</span>
+</footer>
 </body>
 </html>
