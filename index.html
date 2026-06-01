@@ -1,26 +1,324 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Ambionic</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 40px;
-      text-align: center;
-      background: #0b0b0b;
-      color: white;
-    }
-    h1 { font-size: 48px; margin-bottom: 10px; }
-    p { font-size: 20px; max-width: 600px; margin: auto; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AMBIONIC — Soft Robotics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#0d1519;
+    --ink-soft:rgba(13,21,25,.60);
+    --ink-faint:rgba(13,21,25,.38);
+    --line:rgba(13,21,25,.10);
+    --line-strong:rgba(13,21,25,.20);
+    --teal:#0ba596;
+    --teal-deep:#077a6f;
+    --amber:#d9820e;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --disp:'Chakra Petch',sans-serif;
+    --body:'Manrope',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ---------- HEADER ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(20px,5vw,64px);
+    transition:padding .4s ease, background .4s, border-color .4s, backdrop-filter .4s;
+    border-bottom:1px solid transparent;
+  }
+  header.scrolled{
+    background:rgba(255,255,255,.8);
+    backdrop-filter:blur(12px) saturate(1.2);
+    border-bottom:1px solid var(--line);
+    padding-top:15px;padding-bottom:15px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+  .mark{width:25px;height:25px;flex:none}
+  .mark path,.mark line{stroke:var(--ink);stroke-width:1.7;fill:none}
+  .mark .a{stroke:var(--teal)}
+  .wordmark{
+    font-family:var(--disp);font-weight:700;letter-spacing:.34em;
+    font-size:15px;color:var(--ink);padding-left:2px;
+  }
+  .wordmark b{color:var(--teal);font-weight:700}
+  .nav-tag{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+    color:var(--ink-faint);text-transform:uppercase;
+  }
+  .nav-tag span{color:var(--teal)}
+
+  /* thin page spine (left guide line) */
+  .spine{position:fixed;top:0;bottom:0;left:clamp(20px,5vw,64px);width:1px;
+    background:var(--line);z-index:1;pointer-events:none}
+
+  /* ---------- SHARED SECTION GRID ---------- */
+  .scene{
+    position:relative;min-height:100vh;display:grid;
+    grid-template-columns:1.05fr .95fr;align-items:center;
+    gap:clamp(20px,4vw,64px);
+    padding:120px clamp(20px,5vw,64px) 90px;
+  }
+  .scene + .scene{min-height:88vh}
+
+  .copy{position:relative;z-index:4;max-width:560px;padding-left:clamp(16px,3vw,46px)}
+  .kicker{
+    display:flex;align-items:center;gap:13px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.2em;
+    color:var(--teal-deep);text-transform:uppercase;margin-bottom:24px;
+  }
+  .kicker .idx{color:var(--amber);font-weight:500}
+  .kicker .bar{width:42px;height:1px;background:var(--line-strong)}
+
+  h1,h2{
+    font-family:var(--disp);font-weight:700;line-height:1.0;letter-spacing:-.01em;
+  }
+  h1{font-size:clamp(38px,6vw,76px);margin-bottom:26px}
+  h2{font-size:clamp(30px,4.4vw,58px);margin-bottom:22px;font-weight:600}
+  h1 em,h2 em{font-style:normal;color:var(--teal)}
+
+  .lead{
+    font-size:clamp(15px,1.4vw,18px);line-height:1.6;color:var(--ink-soft);
+    max-width:34ch;font-weight:500;
+  }
+  .lead strong{color:var(--ink);font-weight:700}
+  .meta-row{
+    display:flex;gap:30px;margin-top:36px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+    color:var(--ink-faint);text-transform:uppercase;
+  }
+  .meta-row b{display:block;color:var(--teal-deep);font-weight:500;margin-top:6px;font-size:13px}
+
+  /* ---------- MEDIA (integrated video, no box) ---------- */
+  .media{position:relative;justify-self:center;width:100%;display:flex;justify-content:center}
+  .media video{
+    width:100%;height:auto;display:block;background:transparent;
+    /* dissolve the bottom shadow into the page + soften the inner edge */
+    -webkit-mask-image:
+      linear-gradient(to bottom, #000 0%, #000 56%, rgba(0,0,0,.4) 78%, transparent 93%),
+      linear-gradient(to right, transparent 0%, #000 12%, #000 100%);
+    -webkit-mask-composite:source-in;
+    mask-image:
+      linear-gradient(to bottom, #000 0%, #000 56%, rgba(0,0,0,.4) 78%, transparent 93%),
+      linear-gradient(to right, transparent 0%, #000 12%, #000 100%);
+    mask-composite:intersect;
+  }
+  /* size tiers: hero biggest, then smaller down the page */
+  .scene.hero .media{max-width:560px}
+  .scene.s2   .media{max-width:400px}
+  .scene.s3   .media{max-width:340px}
+
+  /* faint oversized index numeral as a quiet design mark */
+  .ghost{
+    position:absolute;z-index:0;font-family:var(--disp);font-weight:700;
+    color:transparent;-webkit-text-stroke:1px rgba(13,21,25,.06);
+    font-size:clamp(120px,22vw,300px);line-height:.8;pointer-events:none;user-select:none;
+  }
+  .scene.hero .ghost{right:2%;top:8%}
+  .scene.s2 .ghost{left:40%;bottom:6%}
+  .scene.s3 .ghost{left:38%;top:10%}
+
+  /* corner ticks — minimal HUD edge */
+  .tick{position:absolute;width:18px;height:18px;z-index:2;pointer-events:none}
+  .tick::before,.tick::after{content:"";position:absolute;background:var(--line-strong)}
+  .tick::before{width:100%;height:1px}.tick::after{height:100%;width:1px}
+  .tick.tr{top:104px;right:clamp(20px,5vw,64px)}
+  .tick.tr::before{right:0}.tick.tr::after{right:0}
+
+  /* divider between scenes */
+  .rule{
+    display:flex;align-items:center;gap:18px;
+    margin:0 clamp(20px,5vw,64px);padding-left:clamp(16px,3vw,46px);
+    font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--ink-faint);text-transform:uppercase;
+  }
+  .rule .hl{flex:1;height:1px;background:var(--line)}
+  .rule .dot{width:5px;height:5px;background:var(--amber);transform:rotate(45deg)}
+
+  /* scroll cue on hero */
+  .scroll-cue{
+    position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:4;
+    font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--ink-faint);
+    text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:9px;
+  }
+  .scroll-cue .stem{width:1px;height:40px;background:linear-gradient(var(--teal),transparent);
+    animation:drop 2.2s infinite ease-in-out}
+  @keyframes drop{0%,100%{transform:scaleY(.35);transform-origin:top;opacity:.4}50%{transform:scaleY(1);opacity:1}}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--line);padding:46px clamp(20px,5vw,64px);
+    display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;
+  }
+  footer .wordmark{font-size:14px}
+  footer .copy{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .hero .copy>*{opacity:0;transform:translateY(20px);animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards}
+  .hero .copy>*:nth-child(1){animation-delay:.2s}
+  .hero .copy>*:nth-child(2){animation-delay:.34s}
+  .hero .copy>*:nth-child(3){animation-delay:.48s}
+  .hero .copy>*:nth-child(4){animation-delay:.62s}
+  .hero .media{opacity:0;animation:fade 1.3s ease .35s forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  @keyframes fade{to{opacity:1}}
+
+  @media(max-width:820px){
+    .scene{grid-template-columns:1fr;min-height:auto;gap:8px;
+      padding:120px clamp(20px,6vw,40px) 70px;text-align:left}
+    .scene + .scene{min-height:auto}
+    .copy{order:1;max-width:none}
+    .media{order:2;margin-top:8px}
+    .scene.hero .media,.scene.s2 .media,.scene.s3 .media{max-width:330px;justify-self:start}
+    .nav-tag{display:none}
+    .tick{display:none}
+    .scroll-cue{display:none}
+    .spine{display:none}
+  }
+</style>
 </head>
 <body>
-  <h1>AMBIONIC</h1>
-  <p>Human-Hand-Like Gripper.</p>
-  <p>Fully Compliant. No Rigid Parts.</p>
-  <p>AI Powered. Learns Continuously. </p>
-  <p>Contact: g.genani@am-bionic.com</p>
+
+<div class="spine"></div>
+
+<!-- ════════════════ HEADER ════════════════ -->
+<header id="hdr">
+  <a class="brand" href="#top">
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+      <path class="a" d="M16 3 L28 27 L4 27 Z"/>
+      <line x1="10.5" y1="20" x2="21.5" y2="20"/>
+      <path d="M16 3 L16 27"/>
+    </svg>
+    <span class="wordmark">AMBI<b>O</b>NIC</span>
+  </a>
+  <div class="nav-tag">SOFT&nbsp;ROBOTICS&nbsp;<span>/</span>&nbsp;ROTTERDAM</div>
+</header>
+<span class="tick tr"></span>
+
+<!-- ════════════════ HERO (01) ════════════════ -->
+<section class="scene hero" id="top">
+  <span class="ghost">01</span>
+  <div class="copy" data-copy="hero">
+    <div class="kicker"><span class="idx">01</span><span class="bar"></span><span class="label"></span></div>
+    <h1></h1>
+    <p class="lead"></p>
+    <div class="meta-row" data-meta></div>
+  </div>
+  <div class="media"><video data-key="hero" muted loop playsinline autoplay preload="auto"></video></div>
+  <div class="scroll-cue"><span>scroll</span><span class="stem"></span></div>
+</section>
+
+<div class="rule"><span>01</span><span class="hl"></span><span class="dot"></span><span class="hl"></span><span>02</span></div>
+
+<!-- ════════════════ SECTION 02 ════════════════ -->
+<section class="scene s2">
+  <span class="ghost">02</span>
+  <div class="copy reveal" data-copy="s2">
+    <div class="kicker"><span class="idx">02</span><span class="bar"></span><span class="label"></span></div>
+    <h2></h2>
+    <p class="lead"></p>
+  </div>
+  <div class="media reveal"><video data-key="s2" muted loop playsinline preload="none"></video></div>
+</section>
+
+<div class="rule"><span>02</span><span class="hl"></span><span class="dot"></span><span class="hl"></span><span>03</span></div>
+
+<!-- ════════════════ SECTION 03 ════════════════ -->
+<section class="scene s3">
+  <span class="ghost">03</span>
+  <div class="copy reveal" data-copy="s3">
+    <div class="kicker"><span class="idx">03</span><span class="bar"></span><span class="label"></span></div>
+    <h2></h2>
+    <p class="lead"></p>
+  </div>
+  <div class="media reveal"><video data-key="s3" muted loop playsinline preload="none"></video></div>
+</section>
+
+<!-- ════════════════ FOOTER ════════════════ -->
+<footer>
+  <span class="wordmark">AMBI<b>O</b>NIC</span>
+  <span class="copy">© 2026 AMBIONIC — ALL RIGHTS RESERVED</span>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   ┌──────────────────────────────────────────────────────────┐
+   │  1 · YOUR VIDEOS — change these to swap the clips          │
+   │  Replace DEMO with a path to your file, e.g.               │
+   │     hero: "assets/hero.mp4"                                │
+   └──────────────────────────────────────────────────────────┘ */
+const VIDEOS = {
+  hero: "videos/2.mp4",   // main / top video  (largest)
+  s2:   "videos/3.mp4",   // second section    (smaller)
+  s3:   "videos/4.mp4",   // third section     (smallest)
+};
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │  2 · YOUR TEXT — edit the words shown beside each video    │
+   └──────────────────────────────────────────────────────────┘ */
+const COPY = {
+  hero: {
+    label: "AEGIS GRIPPER",
+    heading: "Fully <em>flexible.</em><br>No moving parts.",
+    lead: "A compliant, tendon-driven grasp that adapts to <strong>any shape</strong> — where suction fails and rigid jaws do damage.",
+    meta: [["STATUS","TRL 5+"],["CONTACT","DISTRIBUTED"],["COMPLIANCE","VARIABLE"]],
+  },
+  s2: {
+    label: "ADAPTIVE GRASP",
+    heading: "Every <em>shape.</em><br>Every size.",
+    lead: "One end-effector for variable geometry — soft enough for delicate, strong enough for the line.",
+  },
+  s3: {
+    label: "ENGINEERED SOFT",
+    heading: "Force without<br><em>fracture.</em>",
+    lead: "Distributed contact spreads load across the object, so fragile parts arrive intact.",
+  },
+};
+/* The bottom-shadow fade lives in the ".media video" mask-image CSS above —
+   raise the first % to keep more of the clip, lower it to hide more shadow. */
+/* ════════════════════════════════════════════════════════════ */
+
+document.querySelectorAll('video[data-key]').forEach(v=>{ v.src = VIDEOS[v.dataset.key]; });
+
+function fill(el, data){
+  if(!el) return;
+  const k = el.querySelector('.kicker .label'); if(k) k.textContent = data.label || '';
+  const h = el.querySelector('h1,h2'); if(h) h.innerHTML = data.heading || '';
+  const l = el.querySelector('.lead'); if(l) l.innerHTML = data.lead || '';
+  const m = el.querySelector('[data-meta]');
+  if(m && data.meta){ m.innerHTML = data.meta.map(([a,b])=>`<div>${a}<b>${b}</b></div>`).join(''); }
+}
+fill(document.querySelector('[data-copy="hero"]'), COPY.hero);
+fill(document.querySelector('[data-copy="s2"]'), COPY.s2);
+fill(document.querySelector('[data-copy="s3"]'), COPY.s3);
+
+const hdr = document.getElementById('hdr');
+addEventListener('scroll', ()=> hdr.classList.toggle('scrolled', scrollY > 40), {passive:true});
+
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('in');
+      const v = e.target.querySelector('video');
+      if(v) v.play().catch(()=>{});
+    }
+  });
+},{threshold:.2});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
 </body>
 </html>
