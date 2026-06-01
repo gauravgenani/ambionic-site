@@ -58,7 +58,9 @@
   .nav-tag{
     font-family:var(--mono);font-size:11px;letter-spacing:.16em;
     color:var(--ink-faint);text-transform:uppercase;
+    text-decoration:none;
   }
+  .nav-tag:hover{color:var(--teal-deep)}
   .nav-tag span{color:var(--teal)}
 
   /* thin page spine (left guide line) */
@@ -184,7 +186,7 @@
     .copy{order:1;max-width:none}
     .media{order:2;margin-top:8px}
     .scene.hero .media,.scene.s2 .media,.scene.s3 .media{max-width:330px;justify-self:start}
-    .nav-tag{display:none}
+    .nav-tag{font-size:10px}
     .tick{display:none}
     .scroll-cue{display:none}
     .spine{display:none}
@@ -205,7 +207,7 @@
     </svg>
     <span class="wordmark">AMBI<b>O</b>NIC</span>
   </a>
-  <div class="nav-tag">SOFT&nbsp;ROBOTICS&nbsp;<span>/</span>&nbsp;ROTTERDAM</div>
+  <a class="nav-tag" href="contact.html">Contact</a>
 </header>
 <span class="tick tr"></span>
 

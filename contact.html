@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact - AMBIONIC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#0d1519;
+    --ink-soft:rgba(13,21,25,.60);
+    --ink-faint:rgba(13,21,25,.38);
+    --line:rgba(13,21,25,.10);
+    --line-strong:rgba(13,21,25,.20);
+    --teal:#0ba596;
+    --teal-deep:#077a6f;
+    --amber:#d9820e;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --disp:'Chakra Petch',sans-serif;
+    --body:'Manrope',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    min-height:100vh;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(20px,5vw,64px);
+    background:rgba(255,255,255,.8);
+    backdrop-filter:blur(12px) saturate(1.2);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+  .mark{width:25px;height:25px;flex:none}
+  .mark path,.mark line{stroke:var(--ink);stroke-width:1.7;fill:none}
+  .mark .a{stroke:var(--teal)}
+  .wordmark{
+    font-family:var(--disp);font-weight:700;letter-spacing:.34em;
+    font-size:15px;color:var(--ink);padding-left:2px;
+  }
+  .wordmark b{color:var(--teal);font-weight:700}
+  .nav-tag{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+    color:var(--ink-faint);text-transform:uppercase;text-decoration:none;
+  }
+  .nav-tag:hover{color:var(--teal-deep)}
+  .spine{position:fixed;top:0;bottom:0;left:clamp(20px,5vw,64px);width:1px;
+    background:var(--line);z-index:1;pointer-events:none}
+  main{
+    min-height:100vh;
+    display:grid;
+    grid-template-columns:.8fr 1fr;
+    gap:clamp(28px,5vw,72px);
+    align-items:center;
+    padding:130px clamp(20px,5vw,64px) 70px;
+  }
+  .intro{position:relative;z-index:2;padding-left:clamp(16px,3vw,46px);max-width:520px}
+  .kicker{
+    display:flex;align-items:center;gap:13px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.2em;
+    color:var(--teal-deep);text-transform:uppercase;margin-bottom:24px;
+  }
+  .kicker .idx{color:var(--amber);font-weight:500}
+  .kicker .bar{width:42px;height:1px;background:var(--line-strong)}
+  h1{
+    font-family:var(--disp);font-weight:700;line-height:1.0;letter-spacing:-.01em;
+    font-size:clamp(38px,5.6vw,72px);margin-bottom:24px;
+  }
+  .lead{font-size:clamp(15px,1.4vw,18px);line-height:1.6;color:var(--ink-soft);font-weight:500}
+  form{
+    position:relative;z-index:2;
+    display:grid;gap:16px;
+    max-width:620px;
+    width:100%;
+  }
+  label{
+    display:grid;gap:8px;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+  }
+  input,textarea{
+    width:100%;
+    border:1px solid var(--line-strong);
+    border-radius:0;
+    padding:14px 15px;
+    font:500 15px/1.4 var(--body);
+    color:var(--ink);
+    background:#fff;
+    outline:none;
+  }
+  input:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(11,165,150,.12)}
+  textarea{min-height:170px;resize:vertical}
+  button{
+    justify-self:start;
+    border:1px solid var(--teal-deep);
+    background:var(--teal);
+    color:#fff;
+    padding:14px 22px;
+    font:600 12px/1 var(--mono);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  button:hover{background:var(--teal-deep)}
+  .note{
+    font-size:13px;
+    line-height:1.5;
+    color:var(--ink-faint);
+  }
+  @media(max-width:820px){
+    main{grid-template-columns:1fr;padding:120px clamp(20px,6vw,40px) 60px}
+    .intro{max-width:none}
+    .spine{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="spine"></div>
+<header>
+  <a class="brand" href="index.html">
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+      <path class="a" d="M16 3 L28 27 L4 27 Z"/>
+      <line x1="10.5" y1="20" x2="21.5" y2="20"/>
+      <path d="M16 3 L16 27"/>
+    </svg>
+    <span class="wordmark">AMBI<b>O</b>NIC</span>
+  </a>
+  <a class="nav-tag" href="index.html">Home</a>
+</header>
+<main>
+  <section class="intro">
+    <div class="kicker"><span class="idx">04</span><span class="bar"></span><span>Contact</span></div>
+    <h1>Let's talk.</h1>
+    <p class="lead">Tell us what you are building, handling, or trying to automate. We will get back to you soon.</p>
+  </section>
+  <form action="https://formsubmit.co/g.genani@am-bionic.com" method="POST">
+    <input type="hidden" name="_subject" value="New AMBIONIC website contact" />
+    <input type="hidden" name="_captcha" value="false" />
+    <input type="hidden" name="_template" value="table" />
+    <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
+    <label>
+      Name
+      <input type="text" name="name" autocomplete="name" required />
+    </label>
+    <label>
+      Email
+      <input type="email" name="email" autocomplete="email" required />
+    </label>
+    <label>
+      Company
+      <input type="text" name="company" autocomplete="organization" />
+    </label>
+    <label>
+      Message
+      <textarea name="message" required></textarea>
+    </label>
+    <button type="submit">Send message</button>
+    <p class="note">This form sends your message directly to the AMBIONIC team.</p>
+  </form>
+</main>
+</body>
+</html>
