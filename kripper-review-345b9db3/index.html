@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>Confidential — Ambionic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1A2B; --muted:#5B6B7F; --teal:#00A6A0; --amber:#F5A623;
+  --hair:rgba(14,26,43,.14); --red:#C0392B;
+  --disp:'Chakra Petch','Trebuchet MS',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --body:'Manrope',system-ui,-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; min-height:100svh; background:#fff; color:var(--ink);
+  font-family:var(--body); line-height:1.6; -webkit-font-smoothing:antialiased;
+  display:grid; grid-template-columns:1fr 1fr;
+}
+@media(max-width:900px){ body{grid-template-columns:1fr} }
+
+/* left: the notice */
+.side{
+  background:var(--ink); color:#fff; padding:clamp(32px,5vw,64px);
+  display:flex; flex-direction:column; justify-content:center; gap:24px;
+}
+.brand{display:flex; align-items:center; gap:12px; margin-bottom:8px}
+.brand .wm{font-family:var(--disp); font-weight:700; letter-spacing:.16em; font-size:14px}
+.brand .sep{width:1px;height:16px;background:rgba(255,255,255,.3)}
+.brand .prod{font-family:var(--mono); font-size:11.5px; letter-spacing:.22em; color:var(--teal)}
+.side h1{
+  font-family:var(--disp); font-weight:700; margin:0;
+  font-size:clamp(30px,3.6vw,46px); line-height:1.04; letter-spacing:-.01em;
+}
+.side p{margin:0; color:#B9C6D4; font-weight:300; font-size:15.5px; max-width:46ch}
+.side .lock{
+  display:inline-flex; align-items:center; gap:9px; align-self:flex-start;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--amber); border:1px solid rgba(245,166,35,.4); border-radius:100px; padding:7px 14px;
+}
+.terms{
+  border-top:1px solid rgba(255,255,255,.14); padding-top:22px; margin-top:6px;
+  display:grid; gap:11px;
+}
+.terms li{
+  list-style:none; display:flex; gap:12px; font-size:14px; color:#B9C6D4; font-weight:300;
+}
+.terms li::before{content:"—"; color:var(--teal); flex:none}
+.ndalink{
+  display:inline-flex; align-items:center; gap:10px; align-self:flex-start; margin-top:4px;
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:#fff; text-decoration:none; border-bottom:1px solid var(--amber); padding-bottom:4px;
+}
+.ndalink:hover{color:var(--amber)}
+
+/* right: the form */
+.main{
+  padding:clamp(32px,5vw,64px); display:flex; flex-direction:column; justify-content:center;
+}
+.main h2{font-family:var(--disp); font-weight:600; font-size:clamp(21px,2.2vw,27px); margin:0 0 6px}
+.sub{color:var(--muted); font-size:14.5px; font-weight:300; margin:0 0 30px; max-width:42ch}
+label{
+  display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--muted); margin:0 0 7px;
+}
+.field{margin-bottom:18px}
+input[type=text],input[type=email],input[type=password]{
+  width:100%; font-family:var(--body); font-size:15.5px; color:var(--ink);
+  padding:12px 14px; border:1px solid var(--hair); border-radius:8px; background:#fff;
+  transition:border-color .2s, box-shadow .2s;
+}
+input:focus{outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(0,166,160,.13)}
+.agree{
+  display:flex; gap:12px; align-items:flex-start; margin:22px 0 26px;
+  font-size:14px; color:#26364a; font-weight:300; line-height:1.5;
+}
+.agree input{margin:3px 0 0; width:17px; height:17px; accent-color:var(--teal); flex:none}
+.agree a{color:var(--ink)}
+button.go{
+  width:100%; cursor:pointer; font-family:var(--mono); font-size:12px; letter-spacing:.16em;
+  text-transform:uppercase; color:#fff; background:var(--ink); border:1px solid var(--ink);
+  border-radius:100px; padding:15px 26px; transition:.25s;
+}
+button.go:hover:not(:disabled){background:var(--teal); border-color:var(--teal)}
+button.go:disabled{opacity:.45; cursor:not-allowed}
+.msg{
+  margin-top:16px; font-size:13.5px; min-height:20px; font-weight:400;
+  display:flex; align-items:center; gap:9px;
+}
+.msg.err{color:var(--red)}
+.msg.ok{color:var(--teal)}
+.spin{
+  width:13px;height:13px;border:2px solid var(--hair);border-top-color:var(--teal);
+  border-radius:50%; animation:sp .7s linear infinite; flex:none;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+.bar{height:2px; background:var(--hair); margin-top:20px; border-radius:2px; overflow:hidden; display:none}
+.bar.on{display:block}
+.bar i{display:block; height:100%; width:0; background:var(--teal); transition:width .25s ease}
+.foot{margin-top:36px; padding-top:20px; border-top:1px solid var(--hair);
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase}
+noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
+</style>
+</head>
+<body>
+
+<section class="side">
+  <div class="brand">
+    <span class="wm">AMBIONIC</span><span class="sep"></span><span class="prod">KRIPPER</span>
+  </div>
+  <span class="lock">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="10" width="16" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2"/>
+    </svg>
+    Confidential
+  </span>
+  <h1>This page contains confidential information.</h1>
+  <p>What's behind this screen is non-public information about a robotic gripper developed by Ambionic B.V. It is shared with you for review only.</p>
+  <ul class="terms">
+    <li>Use it only to review and give feedback — nothing else.</li>
+    <li>Don't forward the link, the password, or anything you see here.</li>
+    <li>Don't copy, publish or post the videos or images.</li>
+    <li>These obligations run for three years.</li>
+  </ul>
+  <a class="ndalink" href="Ambionic-NDA-Kripper.pdf" download>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Download the full NDA (PDF)
+  </a>
+</section>
+
+<section class="main">
+  <h2>Enter your details to continue</h2>
+  <p class="sub">Ambionic keeps a record of who has been given access. The password was sent to you with this link.</p>
+
+  <form id="f" autocomplete="on" novalidate>
+    <div class="field">
+      <label for="nm">Full name</label>
+      <input type="text" id="nm" name="name" required autocomplete="name" placeholder="Jane de Vries">
+    </div>
+    <div class="field">
+      <label for="em">Email address</label>
+      <input type="email" id="em" name="email" required autocomplete="email" placeholder="jane@company.com">
+    </div>
+    <div class="field">
+      <label for="co">Company <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input type="text" id="co" name="company" autocomplete="organization" placeholder="Company B.V.">
+    </div>
+    <div class="field">
+      <label for="pw">Access password</label>
+      <input type="password" id="pw" name="access" required autocomplete="current-password" placeholder="••••••••••••">
+    </div>
+
+    <label class="agree" for="ag">
+      <input type="checkbox" id="ag" required>
+      <span>I have read the confidentiality terms above and agree to be bound by them, as set out in the <a href="Ambionic-NDA-Kripper.pdf" download>Non-Disclosure Agreement</a>.</span>
+    </label>
+
+    <button class="go" id="btn" type="submit">Unlock the page</button>
+    <div class="bar" id="bar"><i></i></div>
+    <div class="msg" id="msg"></div>
+    <noscript>This page needs JavaScript to decrypt its contents. Please enable it and reload.</noscript>
+  </form>
+
+  <div class="foot">Ambionic B.V. · Rotterdam, NL · KvK 98327933</div>
+</section>
+
+<script>
+(function(){
+  'use strict';
+
+  /* Where the access log is emailed. FormSubmit needs no account — the first
+     submission triggers a one-time confirmation email to this address. */
+  var NOTIFY = 'gaurav.genani@gmail.com';
+
+  var f    = document.getElementById('f');
+  var btn  = document.getElementById('btn');
+  var msg  = document.getElementById('msg');
+  var bar  = document.getElementById('bar');
+  var fill = bar.firstElementChild;
+
+  var MIME = {
+    jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp',
+    mp4:'video/mp4', webm:'video/webm', svg:'image/svg+xml'
+  };
+
+  function say(text, cls, spinner){
+    msg.className = 'msg' + (cls ? ' ' + cls : '');
+    msg.innerHTML = (spinner ? '<span class="spin"></span>' : '') + '<span></span>';
+    msg.lastChild.textContent = text;
+  }
+  function b64bytes(s){
+    var raw = atob(s), a = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) a[i] = raw.charCodeAt(i);
+    return a;
+  }
+  function open_(key, buf){
+    var b = new Uint8Array(buf);
+    return crypto.subtle.decrypt({name:'AES-GCM', iv:b.slice(0,12)}, key, b.slice(12));
+  }
+
+  f.addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = document.getElementById('nm').value.trim();
+    var mail = document.getElementById('em').value.trim();
+    var comp = document.getElementById('co').value.trim();
+    var pass = document.getElementById('pw').value;
+    var ok   = document.getElementById('ag').checked;
+
+    if (!name)                      return say('Please enter your name.', 'err');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return say('Please enter a valid email address.', 'err');
+    if (!ok)                        return say('Please tick the box to confirm you agree.', 'err');
+    if (!pass)                      return say('Please enter the access password.', 'err');
+    if (!window.crypto || !crypto.subtle)
+      return say('This browser is too old to open the page. Please try Chrome, Edge, Firefox or Safari.', 'err');
+
+    btn.disabled = true;
+    unlock(name, mail, comp, pass).catch(function(err){
+      console.error(err);
+      btn.disabled = false;
+      bar.classList.remove('on');
+      say(err && err.userMessage ? err.userMessage
+        : 'Something went wrong opening the page. Please reload and try again.', 'err');
+    });
+  });
+
+  function unlock(name, mail, comp, pass){
+    var manifest, key;
+    say('Checking password…', null, true);
+
+    return fetch('e/m.json', {cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw new Error('manifest'); return r.json(); })
+      .then(function(m){
+        manifest = m;
+        return crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+      })
+      .then(function(baseKey){
+        return crypto.subtle.deriveKey(
+          {name:'PBKDF2', salt:b64bytes(manifest.kdf.salt), iterations:manifest.kdf.iter, hash:manifest.kdf.hash},
+          baseKey, {name:'AES-GCM', length:256}, false, ['decrypt']);
+      })
+      .then(function(k){
+        key = k;
+        return open_(key, b64bytes(manifest.check).buffer).catch(function(){
+          var e = new Error('bad password');
+          e.userMessage = 'That password isn’t right. Check the message the link came in, or ask Gaurav.';
+          throw e;
+        });
+      })
+      .then(function(){
+        // the file map is itself encrypted, so the repo never reveals filenames
+        return open_(key, b64bytes(manifest.map).buffer);
+      })
+      .then(function(mapPlain){
+        manifest = Object.assign(manifest, JSON.parse(new TextDecoder().decode(mapPlain)));
+        // password is good — log the access, but never block on it
+        logAccess(name, mail, comp);
+        say('Password accepted. Loading the page…', 'ok', true);
+        bar.classList.add('on');
+
+        var names = Object.keys(manifest.assets);
+        var total = names.length + 1, done = 0;
+        var urls  = {};
+
+        function step(){ done++; fill.style.width = Math.round(done/total*100) + '%'; }
+
+        return Promise.all(names.map(function(rel){
+          var ext = rel.split('.').pop().toLowerCase();
+          return fetch('e/' + manifest.assets[rel], {cache:'force-cache'})
+            .then(function(r){ if(!r.ok) throw new Error('asset ' + rel); return r.arrayBuffer(); })
+            .then(function(buf){ return open_(key, buf); })
+            .then(function(plain){
+              urls[rel] = URL.createObjectURL(new Blob([plain], {type: MIME[ext] || 'application/octet-stream'}));
+              step();
+            });
+        })).then(function(){
+          return fetch('e/' + manifest.page, {cache:'force-cache'})
+            .then(function(r){ return r.arrayBuffer(); })
+            .then(function(buf){ return open_(key, buf); })
+            .then(function(plain){
+              step();
+              var html = new TextDecoder().decode(plain);
+              // swap every asset path for its in-memory blob URL.
+              // longest paths first, so no path can clobber another as a substring
+              Object.keys(urls).sort(function(a,b){ return b.length - a.length; }).forEach(function(rel){
+                html = html.split(rel).join(urls[rel]);
+              });
+              document.open();
+              document.write(html);
+              document.close();
+            });
+        });
+      });
+  }
+
+  /* Fire-and-forget access log. If it fails, the reviewer still gets in. */
+  function logAccess(name, mail, comp){
+    try{
+      fetch('https://formsubmit.co/ajax/' + NOTIFY, {
+        method:'POST',
+        headers:{'Content-Type':'application/json', 'Accept':'application/json'},
+        body: JSON.stringify({
+          _subject: 'Kripper preview opened by ' + name,
+          _template: 'table',
+          Name: name,
+          Email: mail,
+          Company: comp || '—',
+          Agreed: 'Yes — accepted the confidentiality terms and NDA',
+          When: new Date().toString(),
+          Page: location.href
+        })
+      }).catch(function(){});
+    }catch(e){}
+  }
+})();
+</script>
+</body>
+</html>
