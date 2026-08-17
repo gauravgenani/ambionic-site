@@ -44,15 +44,10 @@ body{
   color:var(--amber); border:1px solid rgba(245,166,35,.4); border-radius:100px; padding:7px 14px;
 }
 .terms{
-  border-top:1px solid rgba(255,255,255,.14); padding-top:22px; margin-top:6px;
-  display:grid; gap:11px;
+  border-top:1px solid rgba(255,255,255,.14); padding-top:24px; margin-top:8px;
 }
-.terms li{
-  list-style:none; display:flex; gap:12px; font-size:14px; color:#B9C6D4; font-weight:300;
-}
-.terms li::before{content:"—"; color:var(--teal); flex:none}
 .ndalink{
-  display:inline-flex; align-items:center; gap:10px; align-self:flex-start; margin-top:4px;
+  display:inline-flex; align-items:center; gap:10px;
   font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase;
   color:#fff; text-decoration:none; border-bottom:1px solid var(--amber); padding-bottom:4px;
 }
@@ -121,19 +116,15 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
     Confidential
   </span>
   <h1>This page contains confidential information.</h1>
-  <p>What's behind this screen is non-public information about a robotic gripper developed by Ambionic B.V. It is shared with you for review only.</p>
-  <ul class="terms">
-    <li>Use it only to review and give feedback — nothing else.</li>
-    <li>Don't forward the link, the password, or anything you see here.</li>
-    <li>Don't copy, publish or post the videos or images.</li>
-    <li>These obligations run for three years.</li>
-  </ul>
-  <a class="ndalink" href="Ambionic-NDA-Kripper.pdf" download>
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Download the full NDA (PDF)
-  </a>
+  <p>You are one of the first to see this, because your feedback and insights are valuable to us. Please treat this information confidentially and only use it for the Purpose of providing feedback or to discuss a potential use case with us. Thanks!</p>
+  <div class="terms">
+    <a class="ndalink" href="Kripper-Confidentiality-Statement.pdf" download>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Download the Confidentiality Statement
+    </a>
+  </div>
 </section>
 
 <section class="main">
@@ -160,7 +151,7 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
 
     <label class="agree" for="ag">
       <input type="checkbox" id="ag" required>
-      <span>I have read the confidentiality terms above and agree to be bound by them, as set out in the <a href="Ambionic-NDA-Kripper.pdf" download>Non-Disclosure Agreement</a>.</span>
+      <span>I have read and agree to the <a href="Kripper-Confidentiality-Statement.pdf" download>Confidentiality Statement</a>.</span>
     </label>
 
     <button class="go" id="btn" type="submit">Unlock the page</button>
@@ -178,7 +169,7 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
 
   /* Where the access log is emailed. FormSubmit needs no account — the first
      submission triggers a one-time confirmation email to this address. */
-  var NOTIFY = 'gaurav.genani@gmail.com';
+  var NOTIFY = 'g.genani@am-bionic.com';
 
   var f    = document.getElementById('f');
   var btn  = document.getElementById('btn');
@@ -250,7 +241,7 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
         key = k;
         return open_(key, b64bytes(manifest.check).buffer).catch(function(){
           var e = new Error('bad password');
-          e.userMessage = 'That password isn’t right. Check the message the link came in, or ask Gaurav.';
+          e.userMessage = 'That password isn’t right. Check the message the link came in, or email g.genani@am-bionic.com.';
           throw e;
         });
       })
