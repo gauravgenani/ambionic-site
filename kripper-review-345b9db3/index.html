@@ -71,10 +71,9 @@ input[type=text],input[type=email],input[type=password]{
 }
 input:focus{outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(0,166,160,.13)}
 .agree{
-  display:flex; gap:12px; align-items:flex-start; margin:22px 0 26px;
-  font-size:14px; color:#26364a; font-weight:300; line-height:1.5;
+  margin:22px 0 24px; font-size:13.5px; color:var(--muted);
+  font-weight:300; line-height:1.55; max-width:44ch;
 }
-.agree input{margin:3px 0 0; width:17px; height:17px; accent-color:var(--teal); flex:none}
 .agree a{color:var(--ink)}
 button.go{
   width:100%; cursor:pointer; font-family:var(--mono); font-size:12px; letter-spacing:.16em;
@@ -97,6 +96,9 @@ button.go:disabled{opacity:.45; cursor:not-allowed}
 .bar{height:2px; background:var(--hair); margin-top:20px; border-radius:2px; overflow:hidden; display:none}
 .bar.on{display:block}
 .bar i{display:block; height:100%; width:0; background:var(--teal); transition:width .25s ease}
+.hidden{display:none}
+#sub a{color:var(--ink); text-decoration:underline; text-underline-offset:3px}
+#sub a:hover{color:var(--teal)}
 .foot{margin-top:36px; padding-top:20px; border-top:1px solid var(--hair);
   font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase}
 noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
@@ -128,8 +130,8 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
 </section>
 
 <section class="main">
-  <h2>Enter your details to continue</h2>
-  <p class="sub">Ambionic keeps a record of who has been given access. The password was sent to you with this link.</p>
+  <h2 id="head">Enter your details to continue</h2>
+  <p class="sub" id="sub">Ambionic keeps a record of who has been given access. The password was sent to you with this link.</p>
 
   <form id="f" autocomplete="on" novalidate>
     <div class="field">
@@ -149,16 +151,15 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
       <input type="password" id="pw" name="access" required autocomplete="current-password" placeholder="••••••••••••">
     </div>
 
-    <label class="agree" for="ag">
-      <input type="checkbox" id="ag" required>
-      <span>I have read and agree to the <a href="Kripper-Confidentiality-Statement.pdf" download>Confidentiality Statement</a>.</span>
-    </label>
+    <p class="agree">By unlocking this page you confirm that you have read and agree to the
+      <a href="Kripper-Confidentiality-Statement.pdf" download>Confidentiality Statement</a>.</p>
 
     <button class="go" id="btn" type="submit">Unlock the page</button>
-    <div class="bar" id="bar"><i></i></div>
-    <div class="msg" id="msg"></div>
     <noscript>This page needs JavaScript to decrypt its contents. Please enable it and reload.</noscript>
   </form>
+
+  <div class="bar" id="bar"><i></i></div>
+  <div class="msg" id="msg"></div>
 
   <div class="foot">Ambionic B.V. · Rotterdam, NL · KvK 98327933</div>
 </section>
@@ -176,6 +177,26 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
   var msg  = document.getElementById('msg');
   var bar  = document.getElementById('bar');
   var fill = bar.firstElementChild;
+  var head = document.getElementById('head');
+  var sub  = document.getElementById('sub');
+
+  /* Remembers a reviewer on this browser so they don't retype everything.
+     Cleared automatically after REMEMBER_DAYS, or via "Not you?". */
+  var STORE = 'ambionic.kripper.session';
+  var REMEMBER_DAYS = 30;
+
+  function loadSession(){
+    try{
+      var s = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (!s || !s.p || !s.t) return null;
+      if (Date.now() - s.t > REMEMBER_DAYS * 864e5){ clearSession(); return null; }
+      return s;
+    }catch(e){ return null; }
+  }
+  function saveSession(n, e_, c, p){
+    try{ localStorage.setItem(STORE, JSON.stringify({n:n, e:e_, c:c, p:p, t:Date.now()})); }catch(x){}
+  }
+  function clearSession(){ try{ localStorage.removeItem(STORE); }catch(e){} }
 
   var MIME = {
     jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp',
@@ -196,6 +217,17 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
     var b = new Uint8Array(buf);
     return crypto.subtle.decrypt({name:'AES-GCM', iv:b.slice(0,12)}, key, b.slice(12));
   }
+  function netErr(){
+    var e = new Error('fetch failed');
+    e.userMessage = 'Couldn’t download the page contents. Check your connection and try again.';
+    return e;
+  }
+  function staleErr(){
+    var e = new Error('decrypt failed');
+    e.userMessage = 'Your browser is holding an old copy of this page. Please do a hard reload '
+      + '(Ctrl+Shift+R, or Cmd+Shift+R on a Mac) and try again.';
+    throw e;
+  }
 
   f.addEventListener('submit', function(e){
     e.preventDefault();
@@ -203,26 +235,27 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
     var mail = document.getElementById('em').value.trim();
     var comp = document.getElementById('co').value.trim();
     var pass = document.getElementById('pw').value;
-    var ok   = document.getElementById('ag').checked;
 
     if (!name)                      return say('Please enter your name.', 'err');
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return say('Please enter a valid email address.', 'err');
-    if (!ok)                        return say('Please tick the box to confirm you agree.', 'err');
     if (!pass)                      return say('Please enter the access password.', 'err');
     if (!window.crypto || !crypto.subtle)
       return say('This browser is too old to open the page. Please try Chrome, Edge, Firefox or Safari.', 'err');
 
     btn.disabled = true;
-    unlock(name, mail, comp, pass).catch(function(err){
-      console.error(err);
-      btn.disabled = false;
-      bar.classList.remove('on');
-      say(err && err.userMessage ? err.userMessage
-        : 'Something went wrong opening the page. Please reload and try again.', 'err');
-    });
+    unlock(name, mail, comp, pass, false).catch(fail);
   });
 
-  function unlock(name, mail, comp, pass){
+  function fail(err){
+    console.error(err);
+    btn.disabled = false;
+    bar.classList.remove('on');
+    f.classList.remove('hidden');
+    say(err && err.userMessage ? err.userMessage
+      : 'Something went wrong opening the page. Please reload and try again.', 'err');
+  }
+
+  function unlock(name, mail, comp, pass, returning){
     var manifest, key;
     say('Checking password…', null, true);
 
@@ -251,8 +284,9 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
       })
       .then(function(mapPlain){
         manifest = Object.assign(manifest, JSON.parse(new TextDecoder().decode(mapPlain)));
-        // password is good — log the access, but never block on it
-        logAccess(name, mail, comp);
+        // password is good — remember this reviewer, and log the access once
+        saveSession(name, mail, comp, pass);
+        if (!returning) logAccess(name, mail, comp);
         say('Password accepted. Loading the page…', 'ok', true);
         bar.classList.add('on');
 
@@ -261,20 +295,23 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
         var urls  = {};
 
         function step(){ done++; fill.style.width = Math.round(done/total*100) + '%'; }
+        // every build gets its own URL, so a stale cached file can never be
+        // decrypted against a newer key
+        var v = '?v=' + (manifest.build || '0');
 
         return Promise.all(names.map(function(rel){
           var ext = rel.split('.').pop().toLowerCase();
-          return fetch('e/' + manifest.assets[rel], {cache:'force-cache'})
-            .then(function(r){ if(!r.ok) throw new Error('asset ' + rel); return r.arrayBuffer(); })
-            .then(function(buf){ return open_(key, buf); })
+          return fetch('e/' + manifest.assets[rel] + v)
+            .then(function(r){ if(!r.ok) throw netErr(); return r.arrayBuffer(); })
+            .then(function(buf){ return open_(key, buf).catch(staleErr); })
             .then(function(plain){
               urls[rel] = URL.createObjectURL(new Blob([plain], {type: MIME[ext] || 'application/octet-stream'}));
               step();
             });
         })).then(function(){
-          return fetch('e/' + manifest.page, {cache:'force-cache'})
-            .then(function(r){ return r.arrayBuffer(); })
-            .then(function(buf){ return open_(key, buf); })
+          return fetch('e/' + manifest.page + v)
+            .then(function(r){ if(!r.ok) throw netErr(); return r.arrayBuffer(); })
+            .then(function(buf){ return open_(key, buf).catch(staleErr); })
             .then(function(plain){
               step();
               var html = new TextDecoder().decode(plain);
@@ -303,13 +340,48 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
           Name: name,
           Email: mail,
           Company: comp || '—',
-          Agreed: 'Yes — accepted the confidentiality terms and NDA',
+          Agreed: 'Yes — unlocked the page, accepting the Kripper Confidentiality Statement',
           When: new Date().toString(),
           Page: location.href
         })
       }).catch(function(){});
     }catch(e){}
   }
+
+  /* ---- returning visitor: open straight away ---- */
+  (function boot(){
+    var s = loadSession();
+    if (!s) return;
+
+    document.getElementById('nm').value = s.n || '';
+    document.getElementById('em').value = s.e || '';
+    document.getElementById('co').value = s.c || '';
+    document.getElementById('pw').value = s.p || '';
+
+    var first = (s.n || '').trim().split(/\s+/)[0];
+    head.textContent = first ? 'Welcome back, ' + first + '.' : 'Welcome back.';
+    sub.innerHTML = 'Opening the page you were given access to. ' +
+      '<a href="#" id="notme">Not you?</a>';
+    f.classList.add('hidden');
+    say('Opening…', null, true);
+    bar.classList.add('on');
+
+    document.getElementById('notme').addEventListener('click', function(ev){
+      ev.preventDefault();
+      clearSession();
+      location.reload();
+    });
+
+    unlock(s.n, s.e, s.c, s.p, true).catch(function(err){
+      // stored password no longer works (or the build moved on) — fall back
+      // to the form, but keep their details filled in
+      clearSession();
+      head.textContent = 'Enter your details to continue';
+      sub.textContent = 'Ambionic keeps a record of who has been given access. The password was sent to you with this link.';
+      document.getElementById('pw').value = '';
+      fail(err);
+    });
+  })();
 })();
 </script>
 </body>
