@@ -299,13 +299,16 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
         var urls  = {};
 
         function step(){ done++; fill.style.width = Math.round(done/total*100) + '%'; }
-        // every build gets its own URL, so a stale cached file can never be
-        // decrypted against a newer key
-        var v = '?v=' + (manifest.build || '0');
+        // each file carries its own content tag, so a stale cached copy can
+        // never be decrypted against a newer key, and unchanged files stay cached
+        function url(name){
+          var t = (manifest.vers && manifest.vers[name]) || manifest.build || '0';
+          return 'e/' + name + '?v=' + t;
+        }
 
         return Promise.all(names.map(function(rel){
           var ext = rel.split('.').pop().toLowerCase();
-          return fetch('e/' + manifest.assets[rel] + v)
+          return fetch(url(manifest.assets[rel]))
             .then(function(r){ if(!r.ok) throw netErr(); return r.arrayBuffer(); })
             .then(function(buf){ return open_(key, buf).catch(staleErr); })
             .then(function(plain){
@@ -313,7 +316,7 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
               step();
             });
         })).then(function(){
-          return fetch('e/' + manifest.page + v)
+          return fetch(url(manifest.page))
             .then(function(r){ if(!r.ok) throw netErr(); return r.arrayBuffer(); })
             .then(function(buf){ return open_(key, buf).catch(staleErr); })
             .then(function(plain){
