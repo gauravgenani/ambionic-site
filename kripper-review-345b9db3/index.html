@@ -131,7 +131,7 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
 
 <section class="main">
   <h2 id="head">Enter your details to continue</h2>
-  <p class="sub" id="sub">Ambionic keeps a record of who has been given access. The password was sent to you with this link.</p>
+  <p class="sub" id="sub">The password was sent to you with this link.</p>
 
   <form id="f" autocomplete="on" novalidate>
     <div class="field">
@@ -377,7 +377,7 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
       // to the form, but keep their details filled in
       clearSession();
       head.textContent = 'Enter your details to continue';
-      sub.textContent = 'Ambionic keeps a record of who has been given access. The password was sent to you with this link.';
+      sub.textContent = 'The password was sent to you with this link.';
       document.getElementById('pw').value = '';
       fail(err);
     });
