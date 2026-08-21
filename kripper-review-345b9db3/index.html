@@ -176,6 +176,16 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
      submission triggers a one-time confirmation email to this address. */
   var NOTIFY = 'g.genani@am-bionic.com';
 
+  /* Revoked addresses. Add lowercase entries here to cut someone off. This
+     also wipes any session already saved in their browser, so a stored
+     password stops working. An attempt from a revoked address is reported. */
+  var REVOKED = [
+    'a@a.com'
+  ];
+  function revoked(mail){
+    return REVOKED.indexOf(String(mail || '').trim().toLowerCase()) > -1;
+  }
+
   var f    = document.getElementById('f');
   var btn  = document.getElementById('btn');
   var msg  = document.getElementById('msg');
@@ -221,6 +231,27 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
     var b = new Uint8Array(buf);
     return crypto.subtle.decrypt({name:'AES-GCM', iv:b.slice(0,12)}, key, b.slice(12));
   }
+  /* Enough to stop idle keyboard-mashing. It will not stop someone who
+     deliberately invents a plausible name and address. */
+  var THROWAWAY = ['mailinator.com','guerrillamail.com','10minutemail.com','tempmail.com',
+    'temp-mail.org','yopmail.com','trashmail.com','sharklasers.com','dispostable.com',
+    'getnada.com','maildrop.cc','throwawaymail.com','fakeinbox.com','mailnesia.com',
+    'example.com','example.org','test.com','a.com','abc.com','asdf.com'];
+
+  function checkName(n){
+    if (n.replace(/[^a-zA-ZÀ-ɏ]/g,'').length < 2) return 'Please enter your full name.';
+    return null;
+  }
+  function checkEmail(m){
+    if (!/^[^@\s]{2,}@[^@\s.]+(\.[^@\s.]+)*\.[a-z]{2,}$/i.test(m))
+      return 'Please enter a valid email address.';
+    var at = m.lastIndexOf('@');
+    var local = m.slice(0, at), domain = m.slice(at + 1).toLowerCase();
+    if (THROWAWAY.indexOf(domain) > -1) return 'Please use your work or personal email address.';
+    if (/^(.)\1*$/.test(local))         return 'Please enter your real email address.';
+    return null;
+  }
+
   function netErr(){
     var e = new Error('fetch failed');
     e.userMessage = 'Couldn’t download the page contents. Check your connection and try again.';
@@ -240,9 +271,15 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
     var comp = document.getElementById('co').value.trim();
     var pass = document.getElementById('pw').value;
 
-    if (!name)                      return say('Please enter your name.', 'err');
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return say('Please enter a valid email address.', 'err');
-    if (!pass)                      return say('Please enter the access password.', 'err');
+    var nameErr = checkName(name), mailErr = checkEmail(mail);
+    if (nameErr)  return say(nameErr, 'err');
+    if (mailErr)  return say(mailErr, 'err');
+    if (revoked(mail)){
+      clearSession();
+      reportBlocked(name, mail, comp, 'form');
+      return say('This address no longer has access. Please contact g.genani@am-bionic.com.', 'err');
+    }
+    if (!pass)    return say('Please enter the access password.', 'err');
     if (!window.crypto || !crypto.subtle)
       return say('This browser is too old to open the page. Please try Chrome, Edge, Firefox or Safari.', 'err');
 
@@ -290,7 +327,7 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
         manifest = Object.assign(manifest, JSON.parse(new TextDecoder().decode(mapPlain)));
         // password is good — remember this reviewer, and log the access once
         saveSession(name, mail, comp, pass);
-        if (!returning) logAccess(name, mail, comp);
+        logAccess(name, mail, comp, returning ? 'Return visit' : 'First visit');
         say('Password accepted. Loading the page…', 'ok', true);
         bar.classList.add('on');
 
@@ -335,30 +372,87 @@ noscript{display:block; color:var(--red); font-size:14px; margin-top:16px}
       });
   }
 
-  /* Fire-and-forget access log. If it fails, the reviewer still gets in. */
-  function logAccess(name, mail, comp){
+  /* Coarse network lookup. Never blocks entry: if it is slow or blocked the
+     access is still logged, just without the location fields. */
+  function lookup(){
+    return new Promise(function(resolve){
+      var settled = false;
+      function done(v){ if(!settled){ settled = true; clearTimeout(timer); resolve(v); } }
+      var timer = setTimeout(function(){ done(null); }, 2500);
+      try{
+        fetch('https://ipwho.is/')
+          .then(function(r){ return r.json(); })
+          .then(function(d){ done(d && d.success ? d : null); })
+          .catch(function(){ done(null); });
+      }catch(e){ done(null); }
+    });
+  }
+
+  function post(fields){
     try{
       fetch('https://formsubmit.co/ajax/' + NOTIFY, {
         method:'POST',
         headers:{'Content-Type':'application/json', 'Accept':'application/json'},
-        body: JSON.stringify({
-          _subject: 'Kripper preview opened by ' + name,
-          _template: 'table',
-          Name: name,
-          Email: mail,
-          Company: comp || '—',
-          Agreed: 'Yes — unlocked the page, accepting the Kripper Confidentiality Statement',
-          When: new Date().toString(),
-          Page: location.href
-        })
+        body: JSON.stringify(fields)
       }).catch(function(){});
     }catch(e){}
+  }
+
+  /* Fire-and-forget access log, sent on every unlock including return visits.
+     If the lookup or the post fails, the reviewer still gets in. */
+  function logAccess(name, mail, comp, visit){
+    lookup().then(function(net){
+      var conn = (net && net.connection) || {};
+      post({
+        _subject: 'Kripper preview opened by ' + name + ' (' + mail + ')',
+        _template: 'table',
+        Name: name,
+        Email: mail,
+        Company: comp || '—',
+        Visit: visit,
+        Network: conn.org || conn.isp || 'unknown',
+        Location: net ? [net.city, net.region, net.country].filter(Boolean).join(', ') : 'unknown',
+        IP: (net && net.ip) || 'unknown',
+        Agreed: 'Yes — unlocked the page, accepting the Kripper Confidentiality Statement',
+        When: new Date().toString(),
+        Page: location.href
+      });
+    });
+  }
+
+  /* Someone on the revoked list tried to get back in. */
+  function reportBlocked(name, mail, comp, how){
+    lookup().then(function(net){
+      var conn = (net && net.connection) || {};
+      post({
+        _subject: 'BLOCKED access attempt — ' + (mail || 'unknown'),
+        _template: 'table',
+        Result: 'Access denied (address is on the revoked list)',
+        Name: name || '—',
+        Email: mail || '—',
+        Company: comp || '—',
+        Via: how,
+        Network: conn.org || conn.isp || 'unknown',
+        Location: net ? [net.city, net.region, net.country].filter(Boolean).join(', ') : 'unknown',
+        IP: (net && net.ip) || 'unknown',
+        When: new Date().toString(),
+        Page: location.href
+      });
+    });
   }
 
   /* ---- returning visitor: open straight away ---- */
   (function boot(){
     var s = loadSession();
     if (!s) return;
+
+    // access revoked since their last visit: wipe the saved session, tell Gaurav
+    if (revoked(s.e)){
+      clearSession();
+      reportBlocked(s.n, s.e, s.c, 'saved session');
+      say('This address no longer has access. Please contact g.genani@am-bionic.com.', 'err');
+      return;
+    }
 
     document.getElementById('nm').value = s.n || '';
     document.getElementById('em').value = s.e || '';
